@@ -1,9 +1,8 @@
 #!/bin/bash
 
-
-apt-get -y install expect
-
 MYSQL_ROOT_PASSWORD=`date +%s | sha256sum | base64 | head -c 32`
+
+echo "[IMPORANT] THIS IS YOUR MYSQL ROOT PASSWORD, THIS SHOULD BE CHANGED: $MYSQL_ROOT_PASSWORD"
 
 SECURE_MYSQL=$(expect -c "
 
@@ -31,8 +30,4 @@ send \"y\r\"
 expect eof
 ")
 
-echo "$SECURE_MYSQL"
-
-echo $MYSQL_ROOT_PASSWORD > /tmp/mysql_root_password.secret
-
-apt-get -y purge expect
+touch /data/.mysql.secure
