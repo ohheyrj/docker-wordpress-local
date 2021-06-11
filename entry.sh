@@ -1,8 +1,12 @@
 #!/bin/bash
 
 sync_s3() {
+    TIMESTAMP=$(date "+%Y.%m.%d-%H.%M.%S")
     echo "[INFO] Sync files back to S3..."
     aws s3 sync  /var/www/html/ s3://blog-systemsmystery-tech-wp-content-bucket/
+    echo "[INFO]...Done"
+    echo "[INFO] Backing up database to S3..."
+    mysqldump $WP_DB_NAME | gzip -9 | aws s3 cp - s3://$WP_DB_BACKUP_BUCKET/$WP_DB_NAME_$TIMESTAMP.dump.gz
     echo "[INFO]...Done"
 }
 echo "[INFO] Starting MySQL..."
@@ -10,8 +14,9 @@ service mysql start
 
 echo "[INFO] Checking if MySQL has already been setup..."
 if [ ! -f /data/.mysql.secure ]; then
-    echo "[INFO] Running MySQL setup..."
+    echo "[INFO] Running MySQL setup (this may take some time)..."
     sh /data/mysql_secure_installation_auto.sh
+    echo "[INFO] Done"
 else
     echo "[SKIP] MySQL already setup"
 fi
@@ -73,8 +78,13 @@ if [ -z $AWS_ACCESS_KEY_ID ] || [ -z $AWS_SECRET_ACCESS_KEY ]; then
     exit 1
 fi
 
+if [ -z $WP_FILE_BACKUP_BUCKET ] || [ -z $WP_DB_BACKUP_BUCKET ]; then
+    echo "[ERROR] No backup buckets specified...."
+    exit 1
+fi
+
 echo "[INFO] Sync files from S3 bucket..."
-aws s3 sync s3://blog-systemsmystery-tech-wp-content-bucket /var/www/html/
+aws s3 sync s3://$WP_FILE_BACKUP_BUCKET /var/www/html/
 
 echo "[INFO] Correct ownership of files..."
 chown -R www-data: /var/www/html
