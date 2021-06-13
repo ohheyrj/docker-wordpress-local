@@ -1,39 +1,42 @@
-FROM ubuntu:latest
+FROM alpine:latest
 
-RUN apt-get -y update
+VOLUME [ "/www" ]
 
-RUN apt-get -y dist-upgrade
+RUN apk update; apk add nginx \
+    php7-fpm \
+    tzdata \
+    php7-curl \
+    php7-gd \
+    php7-mbstring \
+    php7-xml \
+    php7-xmlrpc \
+    php7-soap \
+    php7-intl \
+    php7-zip \
+    php7-apache2 \
+    php7-json \
+    mysql-client \
+    mysql \
+    curl \
+    unzip \
+    expect \
+    python3 \
+    bash \
+    php7-pdo_mysql \
+    py3-pip && rm -rf /var/cache/apk/*
 
-RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
+RUN pip3 install --upgrade pip && pip3 install awscli && aws --version
 
-RUN apt-get install -y apache2
+RUN adduser -D -g 'www' www
 
-RUN apt-get install -y php-curl php-gd php-mbstring php-xml php-xmlrpc php-soap php-intl php-zip libapache2-mod-php  php-mysql
+RUN chown -R www:www /var/lib/nginx
 
-RUN apt-get install -y mysql-server
+COPY nginx.conf /etc/nginx/nginx.conf
 
-RUN apt-get install -y curl unzip expect
+COPY phpinfo.php /www/phpinfo.php
 
-COPY wordpress.conf /etc/apache2/sites-available/wordpress.conf
+COPY entrypoint.sh /data/entrypoint.sh
 
-RUN ln -s /etc/apache2/sites-available/wordpress.conf /etc/apache2/sites-enabled/wordpress.conf
+RUN chmod +x /data/entrypoint.sh
 
-RUN a2enmod rewrite
-
-RUN apache2ctl configtest
-
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-RUN unzip awscliv2.zip
-RUN ./aws/install
-
-COPY mysql_secure_installation_auto.sh /data/mysql_secure_installation_auto.sh
-
-RUN rm /var/www/html/*
-
-COPY entry.sh /data/entry.sh
-
-RUN chmod +x /data/*.sh
-
-ENTRYPOINT [ "/data/entry.sh" ]
-
-EXPOSE 80
+ENTRYPOINT [ "/data/entrypoint.sh" ]
