@@ -33,8 +33,6 @@ RUN chown -R www:www /var/lib/nginx
 
 COPY nginx.conf /etc/nginx/nginx.conf
 
-COPY phpinfo.php /www/phpinfo.php
-
 COPY entrypoint.sh /data/entrypoint.sh
 
 RUN chmod +x /data/entrypoint.sh
