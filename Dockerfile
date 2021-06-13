@@ -23,6 +23,7 @@ RUN apk update; apk add nginx \
     python3 \
     bash \
     php7-pdo_mysql \
+    php7-mysqli \
     py3-pip && rm -rf /var/cache/apk/*
 
 RUN pip3 install --upgrade pip && pip3 install awscli && aws --version
