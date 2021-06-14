@@ -26,6 +26,7 @@ RUN apk update; apk add nginx \
     php7-mysqli \
     php7-simplexml \
     php7-xmlwriter \
+    php7-session \
     py3-pip && rm -rf /var/cache/apk/*
 
 RUN pip3 install --upgrade pip && pip3 install awscli && aws --version
