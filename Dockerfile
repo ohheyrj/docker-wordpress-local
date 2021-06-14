@@ -28,9 +28,18 @@ RUN apk update; apk add nginx \
     php7-xmlwriter \
     php7-session \
     php7-dom \
+    php7 \
+    php7-phar \
     py3-pip && rm -rf /var/cache/apk/*
 
 RUN pip3 install --upgrade pip && pip3 install awscli && aws --version
+
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+    /usr/bin/php wp-cli.phar --info && \
+    chmod +x wp-cli.phar && \
+    mv wp-cli.phar /usr/local/bin/wp && \
+    /usr/local/bin/wp --info
+
 
 RUN adduser -D -g 'www' www
 
